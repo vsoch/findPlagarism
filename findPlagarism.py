@@ -24,5 +24,31 @@ for f in range(0,len(filey)):
   if result:
     guilty[content] = result
 
-# TODO: Write results to output file
+# Save to pickle file
+import pickle, string
+pickle.dump(guilty, open( "plagarismRaw.pkl", "wb" ) )
 
+# Write results to output file
+outfile = open("plagarismRaw.csv","w")
+outfile.writelines("SEARCH_WORDS\tTOP_RESULT\n")
+for content,value in guilty.iteritems():
+  # Filter for non ascii characters
+  result = filter(lambda x: x in string.printable, " ".join(value).encode("utf-8")).replace("\n","")
+  outfile.writelines(content + "\t" + result + "\n")
+outfile.close()
+
+# Now let's count the number of results with gogglesoptional to estimate the number of plagarized
+import re
+count = 0
+expression = re.compile("goggles")
+outfile = open("plagarism.csv","w")
+outfile.writelines("SEARCH_WORDS\tTOP_RESULT\n")
+for content,value in guilty.iteritems():
+  result = filter(lambda x: x in string.printable, " ".join(value).encode("utf-8")).replace("\n","")
+  match = expression.search(result)
+  if not match:
+    count = count + 1
+    outfile.writelines(content + "\t" + result + "\n")
+outfile.close()
+
+print "Found a total of " + str(count) + " plagarized sections!"
